@@ -7,7 +7,7 @@ public class Search {
     private final Hive hive;
     private final Dictionary dictionary;
 
-    Search(Stream<String> wordSource, String letters) {
+    public Search(Stream<String> wordSource, String letters) {
         if (letters.length() != 7) {
             throw new IllegalArgumentException("game requires exactly 7 letters");
         }

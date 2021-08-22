@@ -14,6 +14,10 @@ class Word {
         return lengthPoints() + bonusPoints();
     }
 
+    String getWord() {
+        return word;
+    }
+
     private int lengthPoints() {
         return word.length() <= 4 ? 1 : word.length();
     }

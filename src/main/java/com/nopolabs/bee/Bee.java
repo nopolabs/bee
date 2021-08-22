@@ -26,8 +26,7 @@ public class Bee {
         final String letters = args[0];
         try (final Stream<String> wordSource = getWordSource("words_alpha.txt")) {
 
-            final Search search = new Search(wordSource, letters);
-            final Words words = search.run();
+            final Words words = new Search(wordSource, letters).run();
 
             words.forEach(System.out::println);
             System.out.printf("found %d words worth %d points%n", words.size(), words.totalScore());

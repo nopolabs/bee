@@ -1,7 +1,9 @@
 package com.nopolabs.bee;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 class Words {
 
@@ -23,5 +25,15 @@ class Words {
         return words.stream()
                 .map(Word::getScore)
                 .reduce(0, Integer::sum);
+    }
+
+    List<Word> allWords() {
+        return new ArrayList<>(words);
+    }
+
+    List<String> all() {
+        return words.stream()
+                .map(Word::getWord)
+                .collect(Collectors.toList());
     }
 }
