@@ -49,7 +49,7 @@ public class Bee implements Runnable {
     public void run() {
         final Words words = search(dictionary.root, hive.chars);
         words.forEach(System.out::println);
-        System.out.printf("found %d words%n", words.size());
+        System.out.printf("found %d words worth %d points%n", words.size(), words.totalScore());
     }
 
     private Words search(Node root, char[] chars) {
@@ -89,6 +89,10 @@ public class Bee implements Runnable {
             this.isPangram = isPangram;
         }
 
+        private int getScore() {
+            return (word.length() <= 4 ? 1 : word.length()) + (isPangram ? 7 : 0);
+        }
+
         @Override
         public String toString() {
             if (isPangram) {
@@ -112,6 +116,12 @@ public class Bee implements Runnable {
 
         private void forEach(Consumer<? super Word> action) {
             words.forEach(action);
+        }
+
+        public int totalScore() {
+            return words.stream()
+                    .map(Word::getScore)
+                    .reduce(0, Integer::sum);
         }
     }
 
