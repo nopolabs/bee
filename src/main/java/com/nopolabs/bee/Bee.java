@@ -1,7 +1,12 @@
 package com.nopolabs.bee;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * How to Play Spelling Bee
@@ -17,19 +22,23 @@ import java.util.Objects;
  * - Each puzzle includes at least one “pangram” which uses every letter. These are worth 7 extra points!
  */
 public class Bee {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         final String letters = args[0];
-        final URI uri = Objects.requireNonNull(Bee.class.getClassLoader().getResource("words_alpha.txt")).toURI();
-        final Hive hive = new Hive(letters);
-        final Dictionary dictionary = Dictionary.builder()
-                .from(uri)
-                .containing(hive.getCenterLetter())
-                .build();;
-        final Search search = new Search(dictionary, hive);
+        try (final Stream<String> wordSource = getWordSource("words_alpha.txt")) {
 
-        final Words words = search.run();
+            final Search search = new Search(wordSource, letters);
+            final Words words = search.run();
 
-        words.forEach(System.out::println);
-        System.out.printf("found %d words worth %d points%n", words.size(), words.totalScore());
+            words.forEach(System.out::println);
+            System.out.printf("found %d words worth %d points%n", words.size(), words.totalScore());
+
+        } catch (URISyntaxException | IOException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private static Stream<String> getWordSource(String name) throws URISyntaxException, IOException {
+        final URI uri = Objects.requireNonNull(Bee.class.getClassLoader().getResource(name)).toURI();
+        return Files.lines(Paths.get(uri));
     }
 }

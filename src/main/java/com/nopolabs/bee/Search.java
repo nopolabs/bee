@@ -1,13 +1,21 @@
 package com.nopolabs.bee;
 
+import java.util.stream.Stream;
+
 public class Search {
 
     private final Hive hive;
     private final Dictionary dictionary;
 
-    Search(Dictionary dictionary, Hive hive) {
-        this.hive = hive;
-        this.dictionary = dictionary;
+    Search(Stream<String> wordSource, String letters) {
+        if (letters.length() != 7) {
+            throw new IllegalArgumentException("game requires exactly 7 letters");
+        }
+        this.hive = new Hive(letters);
+        this.dictionary = Dictionary.builder()
+                .from(wordSource)
+                .containing(hive.getCenterLetter())
+                .build();
     }
 
     public Words run() {

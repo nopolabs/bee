@@ -1,9 +1,5 @@
 package com.nopolabs.bee;
 
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 class Dictionary {
@@ -24,10 +20,10 @@ class Dictionary {
 
     static class Builder {
 
-        private URI wordsSource;
+        private Stream<String> wordsSource;
         private String centerLetter;
 
-        Builder from(URI wordsSource) {
+        Builder from(Stream<String> wordsSource) {
             this.wordsSource = wordsSource;
             return this;
         }
@@ -37,14 +33,12 @@ class Dictionary {
             return this;
         }
 
-        Dictionary build() throws IOException {
+        Dictionary build() {
             final Node root = new Node();
 
-            try (Stream<String> words = Files.lines(Paths.get(wordsSource))) {
-                words.filter(word -> word.length() >= 4)
-                        .filter(word -> word.contains(centerLetter))
-                        .forEach(root::add);
-            }
+            wordsSource.filter(word -> word.length() >= 4)
+                    .filter(word -> word.contains(centerLetter))
+                    .forEach(root::add);
 
             return new Dictionary(root);
         }
