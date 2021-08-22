@@ -1,85 +1,193 @@
 package com.nopolabs.bee;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class Bee {
+/**
+ * How to Play Spelling Bee
+ * - Create words using letters from the hive.
+ * - Words must contain at least 4 letters.
+ * - Words must include the center letter.
+ * - Our word list does not include words that are obscure, hyphenated, or proper nouns.
+ * - No cussing either, sorry.
+ * - Letters can be used more than once.
+ * Score points to increase your rating.
+ * - 4-letter words are worth 1 point each.
+ * - Longer words earn 1 point per letter.
+ * - Each puzzle includes at least one “pangram” which uses every letter. These are worth 7 extra points!
+ */
+public class Bee implements Runnable {
 
     public static void main(String[] args) throws Exception {
         final String letters = args[0];
-        final String[] allLetters = letters.split("");
-        final String centerLetter = allLetters[0];
-        final Trie words = getWords("words_alpha.txt", centerLetter);
-        final List<String> found = search(words.root, letters.toCharArray(), "", new ArrayList<>())
-                .stream()
-                .sorted()
-                .collect(Collectors.toList());
-        found.forEach(word -> System.out.printf("%s%s%n", word, contains(word, allLetters) ? " *" : ""));
-        System.out.printf("found %d words%n", found.size());
+        final URI uri = Objects.requireNonNull(Bee.class.getClassLoader().getResource("words_alpha.txt")).toURI();
+        final Bee bee = new Bee(letters, uri);
+
+        bee.run();
     }
 
-    private static boolean contains(String word, String[] allLetters) {
-        for (String letter: allLetters) {
-            if (!word.contains(letter)) {
+    private final Hive hive;
+    private final Dictionary dictionary;
+
+    private Bee(String letters, URI wordsSource) throws IOException {
+        this.hive = new Hive(letters);
+        this.dictionary = Dictionary.builder()
+                .from(wordsSource)
+                .containing(hive.getCenterLetter())
+                .build();
+    }
+
+    @Override
+    public void run() {
+        final Words words = search(dictionary.root, hive.chars);
+        words.forEach(System.out::println);
+        System.out.printf("found %d words%n", words.size());
+    }
+
+    private Words search(Node root, char[] chars) {
+        return search(root, chars, "", new Words());
+    }
+
+    private Words search(Node parent, char[] chars, String prefix, Words words) {
+        for (char letter : chars) {
+            Node child = parent.get(letter);
+            if (child != null) {
+                String candidate = prefix + letter;
+                if (child.isWord) {
+                    words.add(candidate, isPangram(candidate, chars));
+                }
+                words = search(child, chars, candidate, words);
+            }
+        }
+        return words;
+    }
+
+    private boolean isPangram(String word, char[] chars) {
+        for (char letter: chars) {
+            if (!word.contains(String.valueOf(letter))) {
                 return false;
             }
         }
         return true;
     }
 
-    private static List<String> search(Trie.Node parent, char[] letters, String prefix, List<String> found) {
-        for (char ch : letters) {
-            Trie.Node child = parent.children.get(ch);
-            if (child != null) {
-                String candidate = prefix + ch;
-                if (child.isWord) {
-                    found.add(candidate);
+    private static class Word {
+
+        private final String word;
+        private final boolean isPangram;
+
+        private Word(String word, boolean isPangram) {
+            this.word = word;
+            this.isPangram = isPangram;
+        }
+
+        @Override
+        public String toString() {
+            if (isPangram) {
+                return word + " *";
+            }
+            return  word;
+        }
+    }
+
+    private static class Words {
+
+        private final ArrayList<Word> words = new ArrayList<>();
+
+        private void add(String word, boolean isPangram) {
+            words.add(new Word(word, isPangram));
+        }
+
+        private int size() {
+            return words.size();
+        }
+
+        private void forEach(Consumer<? super Word> action) {
+            words.forEach(action);
+        }
+    }
+
+    private static class Dictionary {
+
+        private Node root;
+
+        private Dictionary(Node root) {
+            this.root = root;
+        }
+
+        private static Builder builder() {
+            return new Builder();
+        }
+
+        private static class Builder {
+
+            private URI wordsSource;
+            private String centerLetter;
+
+            private Builder from(URI wordsSource) {
+                this.wordsSource = wordsSource;
+                return this;
+            }
+
+            private Builder containing(String centerLetter) {
+                this.centerLetter = centerLetter;
+                return this;
+            }
+
+            private Dictionary build() throws IOException {
+                final Node root = new Node();
+
+                try (Stream<String> words = Files.lines(Paths.get(wordsSource))) {
+                    words.filter(word -> word.length() >= 4)
+                            .filter(word -> word.contains(centerLetter))
+                            .forEach(word -> {
+                                Node current = root;
+                                for (char letter: word.toCharArray()) {
+                                    current = current.insert(letter);
+                                }
+
+                                current.isWord = true;
+                            });
                 }
-                found = search(child, letters, candidate, found);
+
+                return new Dictionary(root);
             }
         }
-        return found;
-    }
-    
-    private static Trie getWords(String name, String letter) throws Exception {
-        Trie trie = new Trie();
-        try (Stream<String> words = Files.lines(Paths.get(toURI(name)))) {
-            words.filter(w -> w.length() >= 4)
-                    .filter(w -> w.contains(letter))
-                    .forEach(trie::insert);
-        }
-        return trie;
     }
 
-    private static URI toURI(String name) throws Exception {
-        return Objects.requireNonNull(Bee.class.getClassLoader().getResource(name)).toURI();
-    }
+    private static class Hive {
 
-    private static class Trie {
+        private final String[] letters;
+        private final char[] chars;
 
-        private final Trie.Node root = new Trie.Node();
-
-        public void insert(String word) {
-            Trie.Node current = root;
-
-            for (char l: word.toCharArray()) {
-                current = current.children.computeIfAbsent(l, c -> new Trie.Node());
-            }
-
-            current.isWord = true;
+        private Hive(String letters) {
+            this.letters = letters.split("");
+            this.chars = letters.toCharArray();
         }
 
-        private static class Node {
-            private final Map<Character, Trie.Node> children = new HashMap<>();
-            private boolean isWord;
+        private String getCenterLetter() {
+            return letters[0];
+        }
+    }
+
+    private static class Node {
+        private final Map<Character, Node> children = new HashMap<>();
+        private boolean isWord;
+
+        private Node insert(char letter) {
+            return children.computeIfAbsent(letter, c -> new Node());
+        }
+
+        private Node get(char letter) {
+            return children.get(letter);
         }
     }
 }
