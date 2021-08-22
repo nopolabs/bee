@@ -11,7 +11,15 @@ class Word {
     }
 
     int getScore() {
-        return (word.length() <= 4 ? 1 : word.length()) + (isPangram ? 7 : 0);
+        return lengthPoints() + bonusPoints();
+    }
+
+    private int lengthPoints() {
+        return word.length() <= 4 ? 1 : word.length();
+    }
+
+    private int bonusPoints() {
+        return isPangram ? 7 : 0;
     }
 
     @Override

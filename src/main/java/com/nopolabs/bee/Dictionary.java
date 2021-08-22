@@ -43,14 +43,7 @@ class Dictionary {
             try (Stream<String> words = Files.lines(Paths.get(wordsSource))) {
                 words.filter(word -> word.length() >= 4)
                         .filter(word -> word.contains(centerLetter))
-                        .forEach(word -> {
-                            Node current = root;
-                            for (char letter : word.toCharArray()) {
-                                current = current.insert(letter);
-                            }
-
-                            current.setWord(true);
-                        });
+                        .forEach(root::add);
             }
 
             return new Dictionary(root);

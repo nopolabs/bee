@@ -8,10 +8,6 @@ class Node {
 
     private boolean isWord;
 
-    Node insert(char letter) {
-        return children.computeIfAbsent(letter, c -> new Node());
-    }
-
     Node get(char letter) {
         return children.get(letter);
     }
@@ -22,5 +18,17 @@ class Node {
 
     boolean isWord() {
         return isWord;
+    }
+
+    void add(String word) {
+        Node node = this;
+        for (char letter : word.toCharArray()) {
+            node = node.insert(letter);
+        }
+        node.setWord(true);
+    }
+
+    private Node insert(char letter) {
+        return children.computeIfAbsent(letter, c -> new Node());
     }
 }
