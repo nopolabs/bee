@@ -8,38 +8,52 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Bee {
 
     public static void main(String[] args) throws Exception {
-        Trie words = getWords("words_alpha.txt");
-        String letters = args[0];
-
-        List<String> found = search(words.root, letters.toCharArray(), new ArrayList<>());
-
-        found.stream()
-                .filter(w -> w.contains(letters.substring(0, 1)))
-                .forEach(System.out::println);
+        final String letters = args[0];
+        final String[] allLetters = letters.split("");
+        final String centerLetter = allLetters[0];
+        final Trie words = getWords("words_alpha.txt", centerLetter);
+        final List<String> found = search(words.root, letters.toCharArray(), "", new ArrayList<>())
+                .stream()
+                .sorted()
+                .collect(Collectors.toList());
+        found.forEach(word -> System.out.printf("%s%s%n", word, contains(word, allLetters) ? " *" : ""));
+        System.out.printf("found %d words%n", found.size());
     }
 
-    private static List<String> search(Trie.Node parent, char[] letters, List<String> found) {
+    private static boolean contains(String word, String[] allLetters) {
+        for (String letter: allLetters) {
+            if (!word.contains(letter)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<String> search(Trie.Node parent, char[] letters, String prefix, List<String> found) {
         for (char ch : letters) {
             Trie.Node child = parent.children.get(ch);
             if (child != null) {
-                if (child.word != null) {
-                    found.add(child.word);
+                String candidate = prefix + ch;
+                if (child.isWord) {
+                    found.add(candidate);
                 }
-                found = search(child, letters, found);
+                found = search(child, letters, candidate, found);
             }
         }
         return found;
     }
     
-    private static Trie getWords(String name) throws Exception {
+    private static Trie getWords(String name, String letter) throws Exception {
         Trie trie = new Trie();
         try (Stream<String> words = Files.lines(Paths.get(toURI(name)))) {
             words.filter(w -> w.length() >= 4)
+                    .filter(w -> w.contains(letter))
                     .forEach(trie::insert);
         }
         return trie;
@@ -48,7 +62,6 @@ public class Bee {
     private static URI toURI(String name) throws Exception {
         return Objects.requireNonNull(Bee.class.getClassLoader().getResource(name)).toURI();
     }
-
 
     private static class Trie {
 
@@ -61,27 +74,12 @@ public class Bee {
                 current = current.children.computeIfAbsent(l, c -> new Trie.Node());
             }
 
-            current.word = word;
-        }
-
-        public boolean find(String word) {
-            Trie.Node current = root;
-
-            for (int i = 0; i < word.length(); i++) {
-                char ch = word.charAt(i);
-                Trie.Node node = current.children.get(ch);
-                if (node == null) {
-                    return false;
-                }
-                current = node;
-            }
-
-            return current.word != null;
+            current.isWord = true;
         }
 
         private static class Node {
             private final Map<Character, Trie.Node> children = new HashMap<>();
-            private String word;
+            private boolean isWord;
         }
     }
 }
