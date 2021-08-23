@@ -8,7 +8,7 @@ class Node {
 
     private boolean isWord;
 
-    Node get(char letter) {
+    Node getChild(char letter) {
         return children.get(letter);
     }
 

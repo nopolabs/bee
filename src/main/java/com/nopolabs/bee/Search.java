@@ -24,19 +24,21 @@ public class Search {
     }
 
     private Words search(Node root, Hive hive) {
-        return search(root, hive, "", new Words());
+        return search(root, hive, "");
     }
 
-    private Words search(Node parent, Hive hive, String prefix, Words words) {
+    private Words search(Node parent, Hive hive, String prefix) {
+        Words words = new Words();
+        if (parent == null) {
+            return words;
+        }
+        if (parent.isWord()) {
+            words.add(prefix, hive.isPangram(prefix));
+        }
         for (char letter : hive.getChars()) {
-            Node child = parent.get(letter);
-            if (child != null) {
-                String current = prefix + letter;
-                if (child.isWord()) {
-                    words.add(current, hive.isPangram(current));
-                }
-                words = search(child, hive, current, words);
-            }
+            Node child = parent.getChild(letter);
+            Words childWords = search(child, hive, prefix + letter);
+            words.addAll(childWords);
         }
         return words;
     }

@@ -9,6 +9,10 @@ class Words {
 
     private final ArrayList<Word> words = new ArrayList<>();
 
+    public void addAll(Words other) {
+        words.addAll(other.allWords());
+    }
+
     void add(String word, boolean isPangram) {
         words.add(new Word(word, isPangram));
     }
