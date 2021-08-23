@@ -8,6 +8,7 @@ public class Search {
     private final Dictionary dictionary;
 
     public Search(Stream<String> wordSource, String letters) {
+        letters = letters.toLowerCase().replaceAll("[^a-z]", "");
         if (letters.length() != 7) {
             throw new IllegalArgumentException("game requires exactly 7 letters");
         }

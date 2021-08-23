@@ -37,6 +37,7 @@ class Dictionary {
             final Node root = new Node();
 
             wordsSource.filter(word -> word.length() >= 4)
+                    .map(String::toLowerCase)
                     .filter(word -> word.contains(centerLetter))
                     .forEach(root::add);
 

@@ -12,9 +12,73 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchTest {
+
+    @Test
+    void test_less_than_seven_letters() {
+        Stream<String> wordSource = Stream.of("aaa");
+        String letters = "aeious";
+
+        Exception exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Search(wordSource, letters).run());
+        assertEquals(
+                "game requires exactly 7 letters",
+                exception.getMessage());
+    }
+
+    @Test
+    void test_more_than_seven_letters() {
+        Stream<String> wordSource = Stream.of("aaa");
+        String letters = "aeioustx";
+
+        Exception exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Search(wordSource, letters).run());
+        assertEquals(
+                "game requires exactly 7 letters",
+                exception.getMessage());
+    }
+
+    @Test
+    void test_non_alpha_letters() {
+        Stream<String> wordSource = Stream.of("aaa");
+        String letters = "abc4efg";
+
+        Exception exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Search(wordSource, letters).run());
+        assertEquals(
+                "game requires exactly 7 letters",
+                exception.getMessage());
+    }
+
+    @Test
+    void test_translates_upper_case_letters() {
+        Stream<String> wordSource = Stream.of("abba");
+        String letters = "ABCDEFG";
+
+        Words words = new Search(wordSource, letters).run();
+
+        assertEquals(1, words.size());
+        assertTrue(words.all().contains("abba"));
+        assertEquals(1, words.totalScore());
+    }
+
+    @Test
+    void test_translates_upper_case_words() {
+        Stream<String> wordSource = Stream.of("ABBA");
+        String letters = "abcdefg";
+
+        Words words = new Search(wordSource, letters).run();
+
+        assertEquals(1, words.size());
+        assertTrue(words.all().contains("abba"));
+        assertEquals(1, words.totalScore());
+    }
 
     @Test
     void test_too_short() {
