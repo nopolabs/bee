@@ -18,6 +18,10 @@ class Dictionary {
         return root;
     }
 
+    public int getWordCount() {
+        return root.getCount();
+    }
+
     static class Builder {
 
         private Stream<String> wordsSource;

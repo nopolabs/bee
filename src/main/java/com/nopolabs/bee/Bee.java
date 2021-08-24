@@ -26,10 +26,12 @@ public class Bee {
         final String letters = args[0];
         try (final Stream<String> wordSource = getWordSource("words_alpha.txt")) {
 
-            final Words words = new Search(wordSource, letters).run();
+            final Search search = new Search(wordSource, letters);
+            final Words words = search.run();
 
             words.forEach(System.out::println);
             System.out.printf("found %d words worth %d points%n", words.size(), words.totalScore());
+            System.out.printf("Dictionary contains %d words%n", search.getWordCount());
 
         } catch (URISyntaxException | IOException e) {
             System.err.println(e.getMessage());

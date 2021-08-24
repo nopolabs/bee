@@ -8,6 +8,8 @@ class Node {
 
     private boolean isWord;
 
+    private int count;
+
     Node getChild(char letter) {
         return children.get(letter);
     }
@@ -20,6 +22,10 @@ class Node {
         return isWord;
     }
 
+    int getCount() {
+        return count;
+    }
+
     void add(String word) {
         Node node = this;
         for (char letter : word.toCharArray()) {
@@ -29,6 +35,7 @@ class Node {
     }
 
     private Node insert(char letter) {
+        count++;
         return children.computeIfAbsent(letter, c -> new Node());
     }
 }
