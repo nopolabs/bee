@@ -3,9 +3,11 @@ package com.nopolabs.bee;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -22,9 +24,13 @@ import java.util.stream.Stream;
  * - Each puzzle includes at least one “pangram” which uses every letter. These are worth 7 extra points!
  */
 public class Bee {
+
+    public static String WORDS_ALPHA_RESOURCE = "words_alpha.txt";
+    public static String DICT_WORDS_FILE = "/usr/share/dict/words";
+
     public static void main(String[] args) {
         final String letters = args[0];
-        try (final Stream<String> wordSource = getWordSource("words_alpha.txt")) {
+        try (final Stream<String> wordSource = getWordSource(DICT_WORDS_FILE)) {
 
             final Search search = new Search(wordSource, letters);
             final Words words = search.run();
@@ -39,7 +45,9 @@ public class Bee {
     }
 
     private static Stream<String> getWordSource(String name) throws URISyntaxException, IOException {
-        final URI uri = Objects.requireNonNull(Bee.class.getClassLoader().getResource(name)).toURI();
-        return Files.lines(Paths.get(uri));
+        final URL url = Optional
+                .ofNullable(Bee.class.getClassLoader().getResource(name))
+                .orElse(new URL("file://" + name));
+        return Files.lines(Paths.get(url.toURI()));
     }
 }
