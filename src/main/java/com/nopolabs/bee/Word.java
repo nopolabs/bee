@@ -1,6 +1,6 @@
 package com.nopolabs.bee;
 
-class Word {
+class Word implements Comparable<Word> {
 
     private final String word;
     private final boolean isPangram;
@@ -24,6 +24,11 @@ class Word {
 
     private int bonusPoints() {
         return isPangram ? 7 : 0;
+    }
+
+    @Override
+    public int compareTo(Word other) {
+        return word.compareTo(other.getWord());
     }
 
     @Override

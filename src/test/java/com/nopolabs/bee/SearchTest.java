@@ -113,7 +113,7 @@ public class SearchTest {
 
         assertEquals(1, words.size());
         assertTrue(words.all().contains("auto"));
-        assertTrue(words.allWords().stream()
+        assertTrue(words.asList().stream()
                 .anyMatch(w -> w.toString().equals("auto")));
         assertEquals(1, words.totalScore());
     }
@@ -127,7 +127,7 @@ public class SearchTest {
 
         assertEquals(1, words.size());
         assertTrue(words.all().contains("tautoousious"));
-        assertTrue(words.allWords().stream()
+        assertTrue(words.asList().stream()
                 .anyMatch(w -> w.toString().equals("tautoousious")));
         assertEquals(12, words.totalScore());
     }
@@ -141,7 +141,7 @@ public class SearchTest {
 
         assertEquals(1, words.size());
         assertTrue(words.all().contains("autosite"));
-        assertTrue(words.allWords().stream()
+        assertTrue(words.asList().stream()
                 .anyMatch(w -> w.toString().equals("autosite *")));
         assertEquals(15, words.totalScore());
     }
@@ -184,7 +184,7 @@ public class SearchTest {
         )));
         assertTrue(words.all().stream()
                 .allMatch(w -> w.length() >= 4));
-        assertTrue(words.allWords().stream()
+        assertTrue(words.asList().stream()
                 .map(Word::toString)
                 .filter(w -> w.endsWith(" *"))
                 .allMatch(w -> w.equals("autosite *")));

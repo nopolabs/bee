@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class Words {
 
     private final ArrayList<Word> words = new ArrayList<>();
 
     public void addAll(Words other) {
-        words.addAll(other.allWords());
+        words.addAll(other.asList());
     }
 
     void add(String word, boolean isPangram) {
@@ -21,22 +22,29 @@ class Words {
         return words.size();
     }
 
-    void forEach(Consumer<? super Word> action) {
-        words.forEach(action);
-    }
-
     int totalScore() {
         return words.stream()
                 .map(Word::getScore)
                 .reduce(0, Integer::sum);
     }
 
-    List<Word> allWords() {
-        return new ArrayList<>(words);
+    Stream<Word> asStream() {
+        return words.stream()
+                .sorted();
+    }
+
+    void forEach(Consumer<? super Word> action) {
+        asStream()
+                .forEach(action);
+    }
+
+    List<Word> asList() {
+        return asStream()
+                .collect(Collectors.toList());
     }
 
     List<String> all() {
-        return words.stream()
+        return asStream()
                 .map(Word::getWord)
                 .collect(Collectors.toList());
     }
