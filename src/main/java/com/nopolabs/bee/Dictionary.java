@@ -42,7 +42,7 @@ class Dictionary {
 
             wordsSource.filter(word -> word.length() >= 4)
                     .map(String::toLowerCase)
-                    .filter(word -> word.contains(centerLetter))
+                    .filter(word -> centerLetter == null || word.contains(centerLetter))
                     .forEach(root::add);
 
             return new Dictionary(root);
