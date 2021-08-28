@@ -1,13 +1,15 @@
 package com.nopolabs.bee;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -30,7 +32,7 @@ public class Bee {
 
     public static void main(String[] args) {
         final String letters = args[0];
-        try (final Stream<String> wordSource = getWordSource(DICT_WORDS_FILE)) {
+        try (final Stream<String> wordSource = getWordSource(WORDS_ALPHA_RESOURCE, DICT_WORDS_FILE)) {
 
             final Search search = new Search(wordSource, letters);
             final Words words = search.run();
@@ -44,10 +46,43 @@ public class Bee {
         }
     }
 
-    private static Stream<String> getWordSource(String name) throws URISyntaxException, IOException {
-        final URL url = Optional
-                .ofNullable(Bee.class.getClassLoader().getResource(name))
-                .orElse(new URL("file://" + name));
-        return Files.lines(Paths.get(url.toURI()));
+    private static Stream<String> getWordSource(String... names) throws URISyntaxException, IOException {
+        return Arrays.stream(names)
+                .map(name -> {
+                    URL url = Bee.class.getClassLoader().getResource(name);
+                    return (url != null) ? url : fileUrl(name);
+                })
+                .filter(Objects::nonNull)
+                .map(Bee::toURI)
+                .filter(Objects::nonNull)
+                .map(Bee::lines)
+                .filter(Objects::nonNull)
+                .flatMap(Function.identity())
+                .sorted()
+                .distinct();
+    }
+
+    private static Stream<String> lines(URI uri) {
+        try {
+            return Files.lines(Paths.get(uri));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static URI toURI(URL url) {
+        try {
+            return url.toURI();
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
+
+    private static URL fileUrl(String name) {
+        try {
+            return new URL("file://" + name);
+        } catch (MalformedURLException e) {
+            return null;
+        }
     }
 }
