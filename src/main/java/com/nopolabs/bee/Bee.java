@@ -1,15 +1,7 @@
 package com.nopolabs.bee;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
