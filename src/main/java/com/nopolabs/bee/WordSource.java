@@ -17,15 +17,15 @@ public class WordSource {
     public static String WORDS_ALPHA_RESOURCE = "words_alpha.txt";
     public static String DICT_WORDS_FILE = "/usr/share/dict/words";
 
-    public static Stream<String> get() throws URISyntaxException, IOException {
+    public static Stream<String> get() {
         return get(WORDS_ALPHA_RESOURCE, DICT_WORDS_FILE);
     }
 
-    public static Stream<String> get(String... names) throws URISyntaxException, IOException {
+    public static Stream<String> get(String... names) {
         return getWordSource(names);
     }
 
-    private static Stream<String> getWordSource(String... names) throws URISyntaxException, IOException {
+    private static Stream<String> getWordSource(String... names) {
         return Arrays.stream(names)
                 .map(name -> {
                     URL url = WordSource.class.getClassLoader().getResource(name);

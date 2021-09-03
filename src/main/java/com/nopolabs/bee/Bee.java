@@ -1,7 +1,5 @@
 package com.nopolabs.bee;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.stream.Stream;
 
 /**
@@ -29,7 +27,7 @@ public class Bee {
             System.out.printf("found %d words worth %d points%n", words.size(), words.totalScore());
             System.out.printf("Dictionary contains %d words%n", search.getWordCount());
 
-        } catch (URISyntaxException | IOException e) {
+        } catch (Exception e) {
             System.err.println(e.getMessage());
         }
     }
